@@ -108,6 +108,8 @@ def parse(options=None):
     parser.add_argument('--metals', type=str, default=None, required=False, help = "list of metals to get the\
         transmission from, if 'all' runs on all metals", nargs='*')
 
+    parser.add_argument('--boost',type=float,default=1.0,help="Increase metal interaction by a factor requires as many boost factors as metal lines present in --metals ", nargs='*')
+
     #parser.add_argument('--metals-from-file', action = 'store_true', help = "add metals from HDU in file")
     parser.add_argument('--metals-from-file',type=str,const='all',help = "list of metals,'SI1260,SI1207' etc, to get from HDUs in file. \
 Use 'all' or no argument for mock version < 7.3 or final metal runs. ",nargs='?')
@@ -585,7 +587,12 @@ def simulate_one_healpix(ifilename,args,model,obsconditions,decam_and_wise_filte
         log.info("Apply metals: {}".format(lstMetals[:-2]))
 
         tmp_qso_flux = apply_metals_transmission(tmp_qso_wave,tmp_qso_flux,
-                            trans_wave,transmission,args.metals)
+                            trans_wave,transmission,args.metals,args.boost)
+
+    #if requested, multiply intensity of metallic lines by a factor
+
+    if args.boost is not None:
+        log.info("Boost metals by a factor of {}".format(args.boost)) 
 
     # if requested, compute magnitudes and apply target selection.  Need to do
     # this calculation separately for QSOs in the north vs south.

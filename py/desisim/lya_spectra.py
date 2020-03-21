@@ -202,7 +202,7 @@ def apply_lya_transmission(qso_wave,qso_flux,trans_wave,trans) :
 
     return output_flux
 
-def apply_metals_transmission(qso_wave,qso_flux,trans_wave,trans,metals) :
+def apply_metals_transmission(qso_wave,qso_flux,trans_wave,trans,metals,boost) :
     '''
     Apply metal transmission to input flux, interpolating if needed.
     The input transmission should be only due to lya, if not has no meaning.
@@ -216,6 +216,7 @@ def apply_metals_transmission(qso_wave,qso_flux,trans_wave,trans,metals) :
         trans_wave: 1D[ntranswave ] array of lya transmission wavelength samples
         trans: 2D[nqso, ntranswave] transmissions [0-1]
         metals: list of metal names to use
+	boost: multiply metal absorption coefficient by a given factor
 
     Returns:
         output_flux[nqso, nwave]
@@ -235,7 +236,15 @@ def apply_metals_transmission(qso_wave,qso_flux,trans_wave,trans,metals) :
     tau[~w] = -np.log(1.e-100)
 
     try:
-        mtrans = { m:np.exp(-absorber_IGM[m]['COEF']*tau) for m in metals }
+	#for index in range(len(metals)):    FIND A WAY TO ASSOCIATE THE CORRESPONDING METAL TO ITS BOOST....
+	print("first metal is",metals[0])
+	print("first boost is",boost[0])
+        
+        print("mean flux Lya",np.mean(np.exp(-tau)))
+        print("mean flux metal",np.mean(np.exp(-absorber_IGM[metals[0]]['COEF']*tau)))
+        print("mean flux boost metal",np.mean(np.exp(-absorber_IGM[metals[0]]['COEF']*boost[0]*tau)))
+        
+        mtrans = { m:np.exp(-absorber_IGM[m]['COEF']*boost[idx]*tau) for idx,m in enumerate(metals) }
         mtrans_wave = { m:(zPix+1.)*absorber_IGM[m]['LRF'] for m in metals }
     except KeyError as e:
         lstMetals = ''
